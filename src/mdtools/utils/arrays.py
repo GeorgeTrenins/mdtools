@@ -64,6 +64,7 @@ def string_to_slice(s: str) -> slice:
     else:
         try:
             slc = int(s)
+            slc = slice(slc, slc+1)
         except ValueError:
             slc = slice(*[int(s) if s else None for s in s.split(":")])
     return slc

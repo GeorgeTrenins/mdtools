@@ -25,7 +25,7 @@ subroutine UpdateQRDF(gABr, atxyz1, atxyz2, r_min, r_max, cell, invCell, mass1, 
     ! Local variables
     !
     INTEGER :: ia, ib, ig, ih
-    REAL(8) :: deltar, dAB, vdAB(3), temp, norm
+    REAL(8) :: deltar, dAB, vdAB(3), norm
     !
     ! Histogram step initialization
     !

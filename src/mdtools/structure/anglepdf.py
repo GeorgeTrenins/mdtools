@@ -15,8 +15,6 @@ from ipi.utils.io import read_file
 from mdtools.structure import _angle_pdfs_fort as _angle_pdf
 from mdtools.utils.arrays import index_in_slice, string_to_slice
 
-def main() -> None:
-    pass
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Calculate the distribution of internal angles for specified atom indices")
@@ -37,7 +35,7 @@ if __name__ == "__main__":
     pos_files = [open(fn, "r") for fn in args.traj]
     # convert bounds to radians:
     theta_min = args.tmin * np.pi / 180
-    theta_max = args.tax * np.pi / 180
+    theta_max = args.tmax * np.pi / 180
     dtheta = (theta_max-theta_min) / args.bins  # PDF step
     # PDF array, first column contains the angle grid
     # the second column stores the distribution
@@ -46,6 +44,7 @@ if __name__ == "__main__":
     )
     i_frame = 0
     i_sample = 0
+    natoms = None
     fn_out_pdf = f"angle_pdf.csv"
     # get the angle indices
     angle_idx = np.ravel(np.loadtxt(args.idx, dtype=np.int32))

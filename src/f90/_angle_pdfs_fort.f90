@@ -4,7 +4,7 @@
 !
 !**********************************************************!
 
-subroutine UpdateAnglePDF(gTheta, theta_idx, atxyz, theta_min, theta_max, cell, invCell, nframes, natoms, nangles, nbins)
+subroutine UpdateAnglePDF(gTheta, theta_idx, atxyz, theta_min, theta_max, cell, invCell, nbeads, natoms, nangles, nbins)
     !
     ! Calculate the distribution of internal angles for 
     !
@@ -12,20 +12,20 @@ subroutine UpdateAnglePDF(gTheta, theta_idx, atxyz, theta_min, theta_max, cell, 
     !
     ! Input
     !
-    INTEGER, INTENT(in) :: nframes, natoms, nangles, nbins, theta_idx(3*nangles)
+    INTEGER, INTENT(in) :: nbeads, natoms, nangles, nbins, theta_idx(3*nangles)
     REAL(8), INTENT(in) :: theta_min, theta_max
-    REAL(8), INTENT(in) :: atxyz(nframes,3*natoms), cell(3,3), invCell(3,3)
+    REAL(8), INTENT(in) :: atxyz(nbeads,3*natoms), cell(3,3), invCell(3,3)
     !
     ! Output
     !
     REAL(8), INTENT(inout) :: gTheta(nbins,2)
-    !f2py intent(hide) :: nframes
+    !f2py intent(hide) :: nbeads
     !f2py intent(hide) :: nangles
     !f2py intent(hide) :: natoms
     !f2py intent(hide) :: nbins
     ! Local variables
     !
-    INTEGER :: i_frame, i_angle, i_bin, i_A, i_B1, i_B2
+    INTEGER :: i_bead, i_angle, i_bin, i_A, i_B1, i_B2
     REAL(8) :: delta_theta, rAB1(3), rAB2(3), dAB1, dAB2, cos_theta, theta, norm
     !
     ! Histogram step initialization
@@ -35,21 +35,22 @@ subroutine UpdateAnglePDF(gTheta, theta_idx, atxyz, theta_min, theta_max, cell, 
     ! Start computing g(θ) from MD configurations
     !
     norm=1.D0 / DBLE(nangles)
-    DO i_frame=1,nframes
+    DO i_bead=1,nbeads
       DO i_angle=1,nangles
-        i_A = theta_idx(3*i_angle-2)     ! index of central atom
+        !NOTE: indices assumed to be 0-based
+        i_A = theta_idx(3*i_angle-2)   ! index of central atom
         i_B1 = theta_idx(3*i_angle-1)  ! index of first edge atom
         i_B2 = theta_idx(3*i_angle)  ! index of second edge atom
         ! Compute the displacements from the central atom according to the minimum-image convention 
         CALL CalcMICDisplacement( & 
           cell, invCell, &
-          atxyz(i_frame,3*i_B1-2:3*i_B1), &
-          atxyz(i_frame,3*i_A -2:3*i_A ), &
+          atxyz(i_bead,3*i_B1+1:3*i_B1+3), &
+          atxyz(i_bead,3*i_A +1:3*i_A +3), &
           rAB1, dAB1)
         CALL CalcMICDisplacement( & 
           cell, invCell, &
-          atxyz(i_frame,3*i_B2-2:3*i_B2), &
-          atxyz(i_frame,3*i_A -2:3*i_A ), &
+          atxyz(i_bead,3*i_B2+1:3*i_B2+3), &
+          atxyz(i_bead,3*i_A +1:3*i_A +3), &
           rAB2, dAB2)
         ! Compute the angle:
         cos_theta = DOT_PRODUCT(rAB1, rAB2) / (dAB1 * dAB2)
@@ -60,7 +61,7 @@ subroutine UpdateAnglePDF(gTheta, theta_idx, atxyz, theta_min, theta_max, cell, 
           gTheta(i_bin,2) = gTheta(i_bin,2) + norm
         END IF
       END DO !i_angle 
-    END DO !i_frame
+    END DO !i_bead
     ! Normalize the histogram
 END SUBROUTINE UpdateAnglePDF
 
